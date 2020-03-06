@@ -3,4 +3,8 @@
     <input type="search" name="q" id="q" placeholder="Location">
     <button type="submit">Search</button>
 </form>
+{{range .}}
+    <div>{{.Title}}</div>
+    <div>host by {{.User.Name}}</div>
+{{end}}
 {{end}}
