@@ -17,12 +17,12 @@ var db *gorm.DB
 //User type=0 for guest and type=1 for host
 type User struct {
 	gorm.Model
-	Name        string
-	Email       string
-	Password    string
-	Type        int
-	Reservation []Reservation
-	Experiences []Experience
+	Name         string
+	Email        string
+	Password     string
+	Type         int
+	Reservations []Reservation
+	Experiences  []Experience
 }
 
 //Experience ...
@@ -198,12 +198,12 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func dashboard(w http.ResponseWriter, r *http.Request) {
-	var exps []Experience
-	user := context.Get(r, MyKey)
 
-	db.Model(&user).Related(&exps)
-	fmt.Println(user)
-	fmt.Println(exps)
+	user := context.Get(r, MyKey).(User)
+	var exs []Experience
+	db.Model(&user).Related(&exs)
+
+	fmt.Println(&exs)
 	dashboardTmpl.Execute(w, map[string]interface{}{
 		"user": user,
 	})
@@ -216,7 +216,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
+	db.LogMode(true)
 	db.AutoMigrate(&User{}, &Experience{}, &Reservation{})
 
 	// user := &User{
@@ -232,7 +232,7 @@ func main() {
 	// 	},
 	// }
 
-	//db.Create(&user)
+	// db.Create(&user)
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", withuser(index))
