@@ -1,10 +1,7 @@
 {{define "content"}}
-<form action="/" method="get">
-    <input type="search" name="q" id="q" placeholder="Location">
-    <button type="submit">Search</button>
-</form>
 {{range .}}
-    <div>{{.Title}}</div>
+    <div class="is-5">{{.Title}}</div>
+    <div>{{.Location}}</div>
     <div>host by {{.User.Name}}</div>
 {{end}}
 {{end}}

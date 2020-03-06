@@ -16,6 +16,7 @@ type User struct {
 	gorm.Model
 	Name        string
 	Email       string
+	Password    string
 	Type        int
 	Reservation []Reservation
 	Experiences []Experience
@@ -70,6 +71,33 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+
+		var usertype int
+
+		if r.FormValue("role") == "guest" {
+			usertype = 0
+		} else {
+			usertype = 1
+		}
+
+		user := User{
+			Name:     r.FormValue("name"),
+			Email:    r.FormValue("email"),
+			Password: r.FormValue("password"),
+			Type:     usertype,
+		}
+
+		db.Create(&user)
+		http.SetCookie(w, &http.Cookie{
+			Name:   "auth",
+			Value:  user.Email + "&" + user.Password,
+			Path:   "/",
+			MaxAge: 2592000,
+		})
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
 	registerTmpl.Execute(w, nil)
 }
 
