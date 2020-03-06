@@ -43,6 +43,7 @@
                     </div>
 
                     <div class="navbar-end">
+                        {{if eq .user.ID 0}}
                         <div class="navbar-item">
                             <div class="buttons">
                                 <a class="button is-primary" href="/register">
@@ -53,6 +54,29 @@
                                 </a>
                             </div>
                         </div>
+                        {{else}}
+                        <div class="navbar-item has-dropdown is-hoverable">
+                            <a class="navbar-link">
+                              {{.user.Name}}
+                            </a>
+                    
+                            <div class="navbar-dropdown">
+                                {{if eq .user.Type 1}}
+                                <a class="navbar-item">
+                                    Dashboard
+                                </a>
+                                {{end}}
+                              <a class="navbar-item">
+                                Profile
+                              </a>
+                              <hr class="navbar-divider">
+                              <a class="navbar-item" href="/logout">
+                                Logout
+                              </a>
+                            </div>
+
+                        </div>
+                        {{end}}
                     </div>
                 </div>
             </div>

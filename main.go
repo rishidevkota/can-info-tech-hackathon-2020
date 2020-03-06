@@ -76,6 +76,20 @@ func auth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	}
 }
 
+func withuser(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var user User
+		cookie, err := r.Cookie("auth")
+		if err == nil {
+			as := strings.Split(cookie.Value, "&")
+			db.Where("email=? and password=?", as[0], as[1]).First(&user)
+		}
+
+		context.Set(r, MyKey, user)
+		fn(w, r)
+	}
+}
+
 func index(w http.ResponseWriter, r *http.Request) {
 	var email string
 	cookie, err := r.Cookie("auth")
@@ -97,6 +111,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	indexTmpl.Execute(w, map[string]interface{}{
 		"experiences": &experiences,
 		"email":       email,
+		"user":        context.Get(r, MyKey),
 	})
 }
 
@@ -105,7 +120,10 @@ func ex(w http.ResponseWriter, r *http.Request) {
 	var exp Experience
 	db.First(&exp, id)
 
-	exTmpl.Execute(w, &exp)
+	exTmpl.Execute(w, map[string]interface{}{
+		"experience": &exp,
+		"user":       context.Get(r, MyKey),
+	})
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -122,10 +140,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 				Path:   "/",
 				MaxAge: 2592000,
 			})
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
 		}
 	}
 
-	loginTmpl.Execute(w, messsage)
+	loginTmpl.Execute(w, map[string]interface{}{
+		"message": messsage,
+		"user":    context.Get(r, MyKey),
+	})
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +179,10 @@ func register(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
-	registerTmpl.Execute(w, nil)
+
+	registerTmpl.Execute(w, map[string]interface{}{
+		"user": context.Get(r, MyKey),
+	})
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
@@ -200,10 +226,10 @@ func main() {
 	//db.Create(&user)
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
-	http.HandleFunc("/", index)
-	http.HandleFunc("/ex", ex)
-	http.HandleFunc("/login", login)
-	http.HandleFunc("/register", register)
-	http.HandleFunc("/logout", auth(logout))
+	http.HandleFunc("/", withuser(index))
+	http.HandleFunc("/ex", withuser(ex))
+	http.HandleFunc("/login", withuser(login))
+	http.HandleFunc("/register", withuser(register))
+	http.HandleFunc("/logout", logout)
 	http.ListenAndServe(":8080", nil)
 }
