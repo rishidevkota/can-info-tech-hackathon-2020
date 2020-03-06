@@ -1,0 +1,17 @@
+{{define "content"}}
+<form action="/login" method="post">
+    <div><b>Login</b></div>
+    <div><input type="email" name="email" id="email" placeholder="Email"></div>
+    <div><input type="password" name="password" id="password" placeholder="Password"></div>
+    <div><button type="submit">Login</button></div>
+</form>
+
+<form action="/login" method="post">
+    <div><b>Register</b></div>
+    <div><input type="email" name="email" id="email" placeholder="Email"></div>
+    <div><input type="password" name="password" id="password" placeholder="Password"></div>
+    <div><input type="radio" name="usertype" value="guest" id="guest"><label for="guest">As Guest</label></div>
+    <div><input type="radio" name="usertype" value="host" id="host"><label for="guest">As Host</label></div>
+    <div><button type="submit">Register</button></div>
+</form>
+{{end}}
