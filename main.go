@@ -3,8 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 	"text/template"
 
+	"github.com/gorilla/context"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
@@ -43,6 +45,10 @@ type Reservation struct {
 	ArrivalDate  string
 }
 
+type key int
+
+const MyKey key = 0
+
 var indexTmpl = template.Must(template.ParseFiles("base.html", "index.html"))
 var loginTmpl = template.Must(template.ParseFiles("base.html", "login.html"))
 var dashboardTmpl = template.Must(template.ParseFiles("base.html", "dashboard.html"))
@@ -50,12 +56,29 @@ var registerTmpl = template.Must(template.ParseFiles("base.html", "register.html
 
 func auth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var user User
+		cookie, err := r.Cookie("auth")
+		if err != nil {
+			http.Redirect(w, r, "/login", 302)
+			return
+		}
+		as := strings.Split(cookie.Value, "&")
+		db.Where("email=?", as[0]).First(&user)
+		if user.Password != as[1] {
+			http.Redirect(w, r, "/login", 302)
+			return
+		}
+
+		context.Set(r, MyKey, user)
+
 		fn(w, r)
 	}
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
 	var experiences []Experience
+	//cookie, err := r.Cookie("auth")
+
 	q := r.FormValue("q")
 	if q != "" {
 		db.Where("location LIKE ?", "%"+q+"%").Preload("User").Find(&experiences)
@@ -67,7 +90,23 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	loginTmpl.Execute(w, nil)
+	var messsage string
+	if r.Method == "POST" {
+		var user User
+		db.Where("email=? and password=?", r.FormValue("email"), r.FormValue("password")).First(&user)
+		if user.Email == "" {
+			messsage = "Email or password is incorrect"
+		} else {
+			http.SetCookie(w, &http.Cookie{
+				Name:   "auth",
+				Value:  user.Email + "&" + user.Password,
+				Path:   "/",
+				MaxAge: 2592000,
+			})
+		}
+	}
+
+	loginTmpl.Execute(w, messsage)
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
@@ -99,6 +138,17 @@ func register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	registerTmpl.Execute(w, nil)
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "auth",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	http.Redirect(w, r, "/", http.StatusFound)
+	return
 }
 
 func dasboard(w http.ResponseWriter, r *http.Request) {
@@ -134,5 +184,6 @@ func main() {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/register", register)
+	http.HandleFunc("/logout", auth(logout))
 	http.ListenAndServe(":8080", nil)
 }

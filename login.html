@@ -1,6 +1,9 @@
 {{define "content"}}
 <form action="/login" method="post">
     <h4 class="title is-4">Login</h4>
+    {{if .}}
+    <div class="notification is-danger is-light">{{.}}</div>
+    {{end}}
     <div class="field">
         <label for="email" class="label">Email</label>
         <div class="control">
