@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,7 +34,6 @@
                                     <div class="control">
                                         <input class="input" type="search" name="q" placeholder="Location">
                                     </div>
-
                                 </div>
                             </form>
                         </div>
@@ -62,12 +60,12 @@
                     
                             <div class="navbar-dropdown">
                                 {{if eq .user.Type 1}}
-                                <a class="navbar-item">
+                                <a class="navbar-item" href="/dashboard">
                                     Dashboard
                                 </a>
                                 {{end}}
                               <a class="navbar-item">
-                                Profile
+                                My Reservations
                               </a>
                               <hr class="navbar-divider">
                               <a class="navbar-item" href="/logout">

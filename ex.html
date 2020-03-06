@@ -1,9 +1,21 @@
 {{define "content"}}
-    {{if eq .experience.ID 0}}
-    <div class="notification is-danger is-light">Not Found</div>
-    {{else}}
+{{if eq .experience.ID 0}}
+<div class="notification is-danger is-light">Not Found</div>
+{{else}}
+<div class="columns">
+    <div class="column is-4">
+        <figure class="image is-1by1">
+            <img src="/static/img/{{.experience.ID}}.jpg" alt="">
+        </figure>
+    </div>
+    <div class="column is-8">
         <div class="title is-3">{{.experience.Title}}</div>
-        <div class="subtitle">{{.experience.Location}}</div>
-        <div>{{.experience.Description}}</div>
-    {{end}}
+        <div><i class="fas fa-map-marker"></i> {{.experience.Location}}</div>
+        <div><i class="fas fa-stopwatch"></i> {{.experience.Duration}}</div>
+        <div><i class="fas fa-money-bill"></i> Rs700</div>
+        <p>{{.experience.Description}}</p>
+    </div>
+</div>
+
+{{end}}
 {{end}}

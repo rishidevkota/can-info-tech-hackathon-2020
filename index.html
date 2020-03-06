@@ -1,9 +1,18 @@
 {{define "content"}}
-{{.user.Name}}
 {{range .experiences}}
-    <div class="is-5">{{.Title}}</div>
-    <div>{{.Location}}</div>
-    <div>host by {{.User.Name}}</div>
-    <div><a href="/ex?id={{.ID}}">view</a></div>
+<div class="columns">
+    <div class="column is-2">
+        <figure class="image is-1by1">
+            <img src="/static/img/{{.ID}}.jpg">
+        </figure>
+    </div>
+    <div class="column is-10">
+        <div class="title is-4">{{.Title}}</div>
+        <div class="subtitle">{{.Location}}</div>
+        <div>host by {{.User.Name}}</div>
+        <div><a href="/ex?id={{.ID}}">view</a></div>
+    </div>
+</div>
+
 {{end}}
 {{end}}

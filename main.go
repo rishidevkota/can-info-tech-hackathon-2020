@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -107,11 +108,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 	} else {
 		db.Preload("User").Find(&experiences)
 	}
-
+	user := context.Get(r, MyKey)
 	indexTmpl.Execute(w, map[string]interface{}{
-		"experiences": &experiences,
+		"experiences": experiences,
 		"email":       email,
-		"user":        context.Get(r, MyKey),
+		"user":        user,
 	})
 }
 
@@ -196,8 +197,16 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func dasboard(w http.ResponseWriter, r *http.Request) {
-	dashboardTmpl.Execute(w, nil)
+func dashboard(w http.ResponseWriter, r *http.Request) {
+	var exps []Experience
+	user := context.Get(r, MyKey)
+
+	db.Model(&user).Related(&exps)
+	fmt.Println(user)
+	fmt.Println(exps)
+	dashboardTmpl.Execute(w, map[string]interface{}{
+		"user": user,
+	})
 }
 
 func main() {
@@ -228,6 +237,7 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", withuser(index))
 	http.HandleFunc("/ex", withuser(ex))
+	http.HandleFunc("/dashboard", withuser(dashboard))
 	http.HandleFunc("/login", withuser(login))
 	http.HandleFunc("/register", withuser(register))
 	http.HandleFunc("/logout", logout)
