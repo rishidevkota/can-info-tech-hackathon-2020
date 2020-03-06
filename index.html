@@ -1,7 +1,8 @@
 {{define "content"}}
-{{range .}}
+{{range .experiences}}
     <div class="is-5">{{.Title}}</div>
     <div>{{.Location}}</div>
     <div>host by {{.User.Name}}</div>
+    <div><a href="/ex?id={{.ID}}">view</a></div>
 {{end}}
 {{end}}

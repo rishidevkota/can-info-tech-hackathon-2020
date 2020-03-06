@@ -53,6 +53,7 @@ var indexTmpl = template.Must(template.ParseFiles("base.html", "index.html"))
 var loginTmpl = template.Must(template.ParseFiles("base.html", "login.html"))
 var dashboardTmpl = template.Must(template.ParseFiles("base.html", "dashboard.html"))
 var registerTmpl = template.Must(template.ParseFiles("base.html", "register.html"))
+var exTmpl = template.Must(template.ParseFiles("base.html", "ex.html"))
 
 func auth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -76,9 +77,16 @@ func auth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	var experiences []Experience
-	//cookie, err := r.Cookie("auth")
+	var email string
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		email = ""
+	} else {
+		as := strings.Split(cookie.Value, "&")
+		email = as[0]
+	}
 
+	var experiences []Experience
 	q := r.FormValue("q")
 	if q != "" {
 		db.Where("location LIKE ?", "%"+q+"%").Preload("User").Find(&experiences)
@@ -86,7 +94,18 @@ func index(w http.ResponseWriter, r *http.Request) {
 		db.Preload("User").Find(&experiences)
 	}
 
-	indexTmpl.Execute(w, &experiences)
+	indexTmpl.Execute(w, map[string]interface{}{
+		"experiences": &experiences,
+		"email":       email,
+	})
+}
+
+func ex(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	var exp Experience
+	db.First(&exp, id)
+
+	exTmpl.Execute(w, &exp)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -182,6 +201,7 @@ func main() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", index)
+	http.HandleFunc("/ex", ex)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/register", register)
 	http.HandleFunc("/logout", auth(logout))

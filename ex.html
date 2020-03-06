@@ -1,0 +1,9 @@
+{{define "content"}}
+    {{if eq .ID 0}}
+    <div class="notification is-danger is-light">Not Found</div>
+    {{else}}
+        <div class="title is-3">{{.Title}}</div>
+        <div class="subtitle">{{.Location}}</div>
+        <div>{{.Description}}</div>
+    {{end}}
+{{end}}
