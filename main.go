@@ -45,6 +45,7 @@ type Reservation struct {
 var indexTmpl = template.Must(template.ParseFiles("base.html", "index.html"))
 var loginTmpl = template.Must(template.ParseFiles("base.html", "login.html"))
 var dashboardTmpl = template.Must(template.ParseFiles("base.html", "dashboard.html"))
+var registerTmpl = template.Must(template.ParseFiles("base.html", "register.html"))
 
 func auth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +67,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	loginTmpl.Execute(w, nil)
+}
+
+func register(w http.ResponseWriter, r *http.Request) {
+	registerTmpl.Execute(w, nil)
 }
 
 func dasboard(w http.ResponseWriter, r *http.Request) {
@@ -100,5 +105,6 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", index)
 	http.HandleFunc("/login", login)
+	http.HandleFunc("/register", register)
 	http.ListenAndServe(":8080", nil)
 }
