@@ -206,6 +206,12 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, MyKey).(User)
 	var ex Experience
 	db.Model(&user).Related(&ex)
+	db.Model(&ex).Related(&ex.Reservations)
+	for i := 0; i < len(ex.Reservations); i++ {
+		db.Model(&ex.Reservations[i]).Related(&ex.Reservations[i].User)
+	}
+
+	fmt.Println(ex)
 
 	if r.Method == "POST" {
 		//db.Model(&user).Association("Experience").Append(&Experience{
@@ -220,15 +226,6 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 		}
 		//})
 	}
-
-	//var res []Reservation
-
-	db.Model(&ex).Related(&ex.Reservations)
-	for i := 0; i < len(ex.Reservations); i++ {
-		db.Model(&ex.Reservations[i]).Related(&ex.Reservations[i].User)
-	}
-
-	fmt.Println(ex)
 
 	dashboardTmpl.Execute(w, map[string]interface{}{
 		"exprience": ex,
@@ -251,7 +248,7 @@ func mrev(w http.ResponseWriter, r *http.Request) {
 func reserve(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, MyKey).(User)
 	var ex Experience
-	db.First(&ex, r.FormValue("exid"))
+	db.Find(&ex, r.FormValue("exid"))
 
 	db.Model(&user).Association("Reservations").Append(&Reservation{
 		ArrivalDate: r.FormValue("checkin"),

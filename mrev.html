@@ -1,3 +1,19 @@
 {{define "content"}}
-profile
+<h4 class="title is-4">My reservations</h4>
+<table class="table is-bordered">
+        <tr>
+            <th>Experience</th>
+            <th>Location</th>
+            <th>Checkin Date</th>
+        </tr>
+        {{range .user.Reservations}}
+        <tr>
+            <td>{{.Experience.Title}}</td>
+            <td>{{.Experience.Location}}</td>
+            <td>{{.ArrivalDate}}</td>
+        </tr>
+        {{end}}
+    
+</table>
+
 {{end}}
