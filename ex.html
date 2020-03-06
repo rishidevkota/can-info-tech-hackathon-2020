@@ -13,6 +13,14 @@
         <div><i class="fas fa-map-marker"></i> {{.experience.Location}}</div>
         <div><i class="fas fa-stopwatch"></i> {{.experience.Duration}}</div>
         <div><i class="fas fa-money-bill"></i> Rs700</div>
+        {{if eq .user.ID 0}}
+        <div class="notification">You need login for reservation</div>
+        {{else}}
+        <form action="/reserve" method="POST">
+            <input type="date" name="checkin" id="chekcin">
+            <button type="submit">Reserve</button>
+        </form>
+        {{end}}
         <p>{{.experience.Description}}</p>
     </div>
 </div>

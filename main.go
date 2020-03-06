@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"text/template"
 
@@ -22,7 +24,7 @@ type User struct {
 	Password     string
 	Type         int
 	Reservations []Reservation
-	Experiences  []Experience
+	Experience   *Experience
 }
 
 //Experience ...
@@ -44,6 +46,8 @@ type Reservation struct {
 	UserID       uint
 	ExperienceID uint
 	ArrivalDate  string
+	Experience   Experience
+	User         User
 }
 
 type key int
@@ -55,6 +59,7 @@ var loginTmpl = template.Must(template.ParseFiles("base.html", "login.html"))
 var dashboardTmpl = template.Must(template.ParseFiles("base.html", "dashboard.html"))
 var registerTmpl = template.Must(template.ParseFiles("base.html", "register.html"))
 var exTmpl = template.Must(template.ParseFiles("base.html", "ex.html"))
+var mrevTmpl = template.Must(template.ParseFiles("base.html", "mrev.html"))
 
 func auth(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -198,15 +203,83 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func dashboard(w http.ResponseWriter, r *http.Request) {
-
 	user := context.Get(r, MyKey).(User)
-	var exs []Experience
-	db.Model(&user).Related(&exs)
+	var ex Experience
+	db.Model(&user).Related(&ex)
 
-	fmt.Println(&exs)
+	if r.Method == "POST" {
+		//db.Model(&user).Association("Experience").Append(&Experience{
+		ex.Title = r.FormValue("title")
+		ex.Location = r.FormValue("location")
+		ex.Duration = r.FormValue("duration")
+		ex.Description = r.FormValue("description")
+		if ex.ID == 0 {
+			db.Model(&user).Association("Experience").Append(ex)
+		} else {
+			db.Save(ex)
+		}
+		//})
+	}
+
+	//var res []Reservation
+
+	db.Model(&ex).Related(&ex.Reservations)
+	for i := 0; i < len(ex.Reservations); i++ {
+		db.Model(&ex.Reservations[i]).Related(&ex.Reservations[i].User)
+	}
+
+	fmt.Println(ex)
+
 	dashboardTmpl.Execute(w, map[string]interface{}{
+		"exprience": ex,
+		"user":      user,
+	})
+}
+
+func mrev(w http.ResponseWriter, r *http.Request) {
+	user := context.Get(r, MyKey).(User)
+	db.Model(&user).Related(&user.Reservations)
+	for i := 0; i < len(user.Reservations); i++ {
+		db.Model(&user.Reservations[i]).Related(&user.Reservations[i].Experience)
+	}
+
+	mrevTmpl.Execute(w, map[string]interface{}{
 		"user": user,
 	})
+}
+
+func reserve(w http.ResponseWriter, r *http.Request) {
+	user := context.Get(r, MyKey).(User)
+	var ex Experience
+	db.First(&ex, r.FormValue("exid"))
+
+	db.Model(&user).Association("Reservations").Append(&Reservation{
+		ArrivalDate: r.FormValue("checkin"),
+		Experience:  ex,
+	})
+
+	http.Redirect(w, r, "/myreservations", http.StatusFound)
+	return
+}
+
+func upload(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(32 << 20)
+	file, _, err := r.FormFile("uploadfile")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer file.Close()
+
+	f, err := os.OpenFile("./public/img/"+r.FormValue("filename"), os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer f.Close()
+	io.Copy(f, file)
+	http.Redirect(w, r, "/dashboard", http.StatusFound)
+	return
 }
 
 func main() {
@@ -238,8 +311,11 @@ func main() {
 	http.HandleFunc("/", withuser(index))
 	http.HandleFunc("/ex", withuser(ex))
 	http.HandleFunc("/dashboard", withuser(dashboard))
+	http.HandleFunc("/myreservations", withuser(mrev))
+	http.HandleFunc("/reserve", withuser(reserve))
 	http.HandleFunc("/login", withuser(login))
 	http.HandleFunc("/register", withuser(register))
 	http.HandleFunc("/logout", logout)
+	http.HandleFunc("/upload", upload)
 	http.ListenAndServe(":8080", nil)
 }

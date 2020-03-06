@@ -1,4 +1,58 @@
 {{define "content"}}
 <h4 class="title is-4">Reservations</h4>
-
+{{if .exprience.Reservations}}
+{{range .exprience.Reservations}}
+{{.User.Name}}
+{{end}}
+{{else}}
+not any reservation made.
+{{end}}
+<h4 class="title is-4">Exprience</h4>
+{{if gt .exprience.ID 0}}
+<form enctype="multipart/form-data" action="/upload" method="post">
+    <div class="field">
+        <input type="hidden" name="filename" value="{{.exprience.ID}}.jpg">
+        <figure class="image is-96x96">
+            <img src="/static/img/{{.exprience.ID}}.jpg" >
+        </figure>
+        <label for="" class="label">Image Upload</label>
+        <div class="control">
+            <input type="file" name="uploadfile" />
+            <button>Upload image</button>
+        </div>
+    </div>
+</form>
+<br>
+{{end}}
+<form action="/dashboard" method="post">
+    <div class="field">
+        <label for="title" class="label">Title</label>
+        <div class="control">
+            <input type="text" name="title" id="title" class="input" value="{{.exprience.Title}}">
+        </div>
+    </div>
+    <div class="field">
+        <label for="location" class="label">Location</label>
+        <div class="control">
+            <input type="text" name="location" id="location" class="input" value="{{.exprience.Location}}">
+        </div>
+    </div>
+    <div class="field">
+        <label for="duration" class="label">Duration</label>
+        <div class="control">
+            <input type="text" name="duration" id="duration" class="input" value="{{.exprience.Duration}}">
+        </div>
+    </div>
+    <div class="field">
+        <label for="description" class="label">Description</label>
+        <div class="control">
+            <textarea name="description" id="" cols="30" rows="10" class="textarea">{{.exprience.Description}}</textarea>
+        </div>
+    </div>
+    <div class="field">
+        <div class="control">
+            <button type="submit" class="button is-link">Add/Update</button>
+        </div>
+    </div>
+</form>
 {{end}}
