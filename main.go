@@ -1,3 +1,6 @@
+//Rishi Ram Devkota
+//2020-03-07
+//Hackathon Nepalgunj
 package main
 
 import (
