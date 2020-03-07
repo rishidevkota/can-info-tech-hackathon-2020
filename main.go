@@ -4,7 +4,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -74,6 +73,7 @@ func (c *Comment) TimeFormat() string {
 
 type key int
 
+//MyKey ...
 const MyKey key = 0
 
 var indexTmpl = template.Must(template.ParseFiles("base.html", "index.html"))
@@ -235,8 +235,6 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < len(ex.Reservations); i++ {
 		db.Model(&ex.Reservations[i]).Related(&ex.Reservations[i].User)
 	}
-
-	fmt.Println(ex)
 
 	if r.Method == "POST" {
 		//db.Model(&user).Association("Experience").Append(&Experience{

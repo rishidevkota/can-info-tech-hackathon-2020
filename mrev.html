@@ -1,17 +1,22 @@
 {{define "content"}}
 <h4 class="title is-4">My reservations</h4>
 <table class="table is-bordered">
+    {{if .user.Reservations}}
         <tr>
             <th>Experience</th>
             <th>Location</th>
             <th>Checkin Date</th>
         </tr>
+        
         {{range .user.Reservations}}
         <tr>
             <td>{{.Experience.Title}}</td>
             <td>{{.Experience.Location}}</td>
             <td>{{.ArrivalDate}}</td>
         </tr>
+        {{end}}
+        {{else}}
+        There is no reservations
         {{end}}
     
 </table>
