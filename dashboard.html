@@ -1,9 +1,21 @@
 {{define "content"}}
 <h4 class="title is-4">Reservations</h4>
 {{if .exprience.Reservations}}
+<table class="table">
+    <tr>
+        <th>Guest Name</th>
+        <th>Email</th>
+        <th>Arrival Date</th>
+    </tr>
 {{range .exprience.Reservations}}
-{{.User.Name}}
+    <tr>
+        <td>{{.User.Name}}</td>
+        <td>{{.User.Email}}</td>
+        <td>{{.ArrivalDate}}</td>
+    </tr>
+
 {{end}}
+</table>
 {{else}}
 not any reservation made.
 {{end}}

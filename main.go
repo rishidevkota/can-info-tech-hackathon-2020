@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -248,7 +249,8 @@ func mrev(w http.ResponseWriter, r *http.Request) {
 func reserve(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, MyKey).(User)
 	var ex Experience
-	db.Find(&ex, r.FormValue("exid"))
+	exid, _ := strconv.Atoi(r.FormValue("exid"))
+	db.Find(&ex, exid)
 
 	db.Model(&user).Association("Reservations").Append(&Reservation{
 		ArrivalDate: r.FormValue("checkin"),

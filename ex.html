@@ -17,6 +17,7 @@
         <div class="notification">You need login for reservation</div>
         {{else}}
         <form action="/reserve" method="POST">
+            <input type="hidden" name="exid" value="{{.experience.ID}}">
             <input type="date" name="checkin" id="chekcin">
             <button type="submit">Reserve</button>
         </form>
