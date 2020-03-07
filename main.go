@@ -29,6 +29,7 @@ type User struct {
 	Type         int
 	Reservations []Reservation
 	Experience   *Experience
+	Comments     []Comment
 }
 
 //Experience ...
@@ -43,6 +44,7 @@ type Experience struct {
 	Type         string
 	User         User
 	Reservations []Reservation
+	Comments     []Comment
 }
 
 //Reservation ...
@@ -53,6 +55,21 @@ type Reservation struct {
 	ArrivalDate  string
 	Experience   Experience
 	User         User
+}
+
+//Comment ...
+type Comment struct {
+	gorm.Model
+	ExperienceID uint
+	UserID       uint
+	Text         string
+	User         User
+	Experience   Experience
+}
+
+//TimeFormat ...
+func (c *Comment) TimeFormat() string {
+	return c.CreatedAt.Format("02 Jan 2006")
 }
 
 type key int
@@ -130,7 +147,10 @@ func ex(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	var exp Experience
 	db.First(&exp, id)
-
+	db.Model(&exp).Related(&exp.Comments)
+	for i := 0; i < len(exp.Comments); i++ {
+		db.Model(&exp.Comments[i]).Related(&exp.Comments[i].User)
+	}
 	exTmpl.Execute(w, map[string]interface{}{
 		"experience": &exp,
 		"user":       context.Get(r, MyKey),
@@ -286,6 +306,21 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func comment(w http.ResponseWriter, r *http.Request) {
+	user := context.Get(r, MyKey).(User)
+	exid, _ := strconv.Atoi(r.FormValue("exid"))
+	var ex Experience
+	db.Find(&ex, exid)
+	comment := Comment{
+		Text:       r.FormValue("comment"),
+		User:       user,
+		Experience: ex,
+	}
+	db.Create(&comment)
+
+	http.Redirect(w, r, "/ex?id="+r.FormValue("exid"), http.StatusFound)
+}
+
 func main() {
 	var err error
 	db, err = gorm.Open("sqlite3", "data.db")
@@ -294,7 +329,7 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&User{}, &Experience{}, &Reservation{})
+	db.AutoMigrate(&User{}, &Experience{}, &Reservation{}, &Comment{})
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", withuser(index))
@@ -306,5 +341,6 @@ func main() {
 	http.HandleFunc("/register", withuser(register))
 	http.HandleFunc("/logout", logout)
 	http.HandleFunc("/upload", upload)
+	http.HandleFunc("/comment", withuser(comment))
 	http.ListenAndServe(":8080", nil)
 }

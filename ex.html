@@ -23,6 +23,29 @@
         </form>
         {{end}}
         <p>{{.experience.Description}}</p>
+        <br>
+        <br>
+        <h4 class="title is-4">Comments</h4>
+        {{if gt .user.ID 0}}
+        <form action="/comment" method="post">
+            <input type="hidden" name="exid" value="{{.experience.ID}}">
+            <div class="field is-grouped">
+                <div class="control">
+                    <input class="input" type="text" name="comment" id="comment" placeholder="Comment">
+                </div>
+                <div class="control">
+                    <button class="button" type="submit">Post</button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <br>
+        {{end}}
+        {{range .experience.Comments}}
+        <small><b>{{.User.Name}}</b> {{.TimeFormat}}</small>
+        <br>
+        {{.Text}}
+        {{end}}
     </div>
 </div>
 
