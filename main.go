@@ -35,6 +35,7 @@ type Experience struct {
 	Title        string
 	Location     string
 	Duration     string
+	Price        string
 	Description  string
 	Type         string
 	User         User
@@ -219,6 +220,7 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 		ex.Title = r.FormValue("title")
 		ex.Location = r.FormValue("location")
 		ex.Duration = r.FormValue("duration")
+		ex.Price = r.FormValue("price")
 		ex.Description = r.FormValue("description")
 		if ex.ID == 0 {
 			db.Model(&user).Association("Experience").Append(ex)
@@ -288,23 +290,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	db.LogMode(true)
+
 	db.AutoMigrate(&User{}, &Experience{}, &Reservation{})
-
-	// user := &User{
-	// 	Name:  "hari",
-	// 	Email: "h@g.com",
-	// 	Type:  1,
-	// 	Experiences: []Experience{
-	// 		{
-	// 			Title:       "travel palpa with local food",
-	// 			Location:    "palpa",
-	// 			Description: "asd daf a asdfl lasdf",
-	// 		},
-	// 	},
-	// }
-
-	// db.Create(&user)
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", withuser(index))
