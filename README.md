@@ -8,7 +8,8 @@ HACKATHON WINNER Project at CAN Info Tech 2020 Provice 5
 * Install Package with go get command:
 
     go get github.com/gorilla/context
-    github.com/jinzhu/gorm
+
+    go get github.com/jinzhu/gorm
 
 * Finally run
     
